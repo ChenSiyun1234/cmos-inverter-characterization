@@ -1,0 +1,4 @@
+* text=auto eol=lf
+# Raw Scopy exports stay byte-for-byte as captured.
+data/*.csv -text
+*.png binary
