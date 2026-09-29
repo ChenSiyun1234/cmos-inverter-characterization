@@ -115,4 +115,4 @@ I added these after the course. They work from the raw captures above.
 
 ## Credits
 
-The lab procedure and the driver/load test fixture come from the EEC 111 course at UC Davis. The CD4007 device values used in the lab also came from the course. I built and measured the circuits. I also ran the LTspice simulations.
+The lab procedure and the driver/load test fixture come from the EEC 111 course at UC Davis. The CD4007 LTspice model and the device values used in the lab also came from the course. I built and measured the circuits. I also ran the LTspice simulations.
