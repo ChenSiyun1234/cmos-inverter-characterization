@@ -10,9 +10,9 @@ It started as an EEC 111 lab at UC Davis in Spring 2026. The question was how tr
 
 The first inverter is a plain one with one NMOS and one PMOS. In the second I put two PMOS in parallel to make the pull-up stronger. In the third I put two NMOS in parallel to make the pull-down stronger. All three ran on a breadboard from 5 V.
 
-I measured them with an ADALM2000 and Scopy. Its signal generator stepped the input from 0 to 5 V while its scope recorded the input and the output. I used 0.5 V steps far from the switching point and 50 mV steps near it, so most of the points land where the output changes fastest. I also simulated the same circuits in LTspice with the course's CD4007 model. The raw captures are in [data/](data/).
+I measured them with an ADALM2000 and Scopy. Its signal generator stepped the input from 0 to 5 V while its scope recorded the input and the output. I used 0.5 V steps far from the switching point and 50 mV steps near it, so the points are closest together around the switching point. I also simulated the same circuits in LTspice with the course's CD4007 model. The raw captures are in [data/](data/).
 
-That script is `analyze.py`. It finds the switching point, where the output equals the input, and the noise margins on each full sweep. Then it draws the plots. It has 34 tests, and most of them run on synthetic curves where the right answer is known. GitHub Actions runs the tests and the analysis on every push.
+The script is `analyze.py`. It finds the switching point, where the output equals the input, and the noise margins on each full sweep. Then it draws the plots. It has 34 tests, and most of them run on synthetic curves where the right answer is known. GitHub Actions runs the tests and the analysis on every push.
 
 ## What I found
 
@@ -22,7 +22,7 @@ All three measured switching points sit below LTspice. On the plain inverter the
 
 ![Transition bands, measured and LTspice](results/measured_vs_ltspice.png)
 
-Each bar covers the inputs where the inverter's gain is above one, from VIL to VIH. The tick marks the switching point. Solid bars are measured and light ones are LTspice.
+Each bar covers the inputs where the output falls faster than the input rises, from VIL to VIH. The tick marks the switching point. Solid bars are measured and light ones are LTspice.
 
 ## Problems I ran into
 

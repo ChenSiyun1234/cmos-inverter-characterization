@@ -21,7 +21,7 @@ The script works on steps, not raw samples. A sample-by-sample slope is too nois
 5. The slope at each step is the line through its two neighbors. VIL and VIH are where this slope crosses -1 on each side of the steepest step.
 6. NML = VIL - VOL and NMH = VOH - VIH. The tables show the median over the full sweeps.
 
-A value gets a `*` in the tables when the slope behind it spans an input step wider than 0.1 V. In these captures that happens to all three VIL values, where the step is 0.45 to 0.89 V wide. NML gets the star from VIL. With two PMOS it runs from 1.5 V to 2.4 V. VM and VIH come from the 50 mV steps.
+A value gets a `*` in the tables when the slope behind it spans an input step wider than 0.1 V. In these captures that happens to all three VIL values, where the step is 0.45 to 0.89 V wide. NML gets the star from VIL. With two PMOS, the wide step runs from 1.5 V to 2.4 V. VM and VIH come from the 50 mV steps.
 
 ## How well the method works
 
