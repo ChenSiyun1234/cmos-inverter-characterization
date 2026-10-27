@@ -1,30 +1,49 @@
 # CMOS inverter characterization
 
-Measured vs simulated switching behavior of CD4007 CMOS gates.
-
-Started as an EEC 111 lab at UC Davis, Spring 2026.
-
-## Question
-
-How does transistor strength move an inverter's switching point and noise margins?
-
-I built three inverters from CD4007 transistors. The baseline has one NMOS and one PMOS. The second has two PMOS in parallel, so its pull-up is stronger. The third has two NMOS in parallel, so its pull-down is stronger. I measured each transfer curve and compared it with LTspice.
-
-## Setup
-
-- The inverters ran on a breadboard from a 5 V supply.
-- An ADALM2000 with Scopy drove the input and recorded both nodes at 1 kS/s. CH1 is the input and CH2 is the output.
-- The input was a staircase from the M2K signal generator. Steps were 500 mV far from the switching point and 50 mV near it. Each step lasted 100 ms.
-- Each capture holds two to four full repeats of the staircase.
-- LTspice ran a DC sweep of the same three inverters from 0 to 5 V in 1 mV steps.
-
-The raw captures and their step plans are in [`data/`](data/). The LTspice values from the lab are in [`sim/ltspice_values.csv`](sim/ltspice_values.csv). A `~` there marks a value I recorded as approximate.
-
-## Results
+I built three CMOS inverters from CD4007 transistors and compared their measured transfer curves with LTspice.
 
 ![Measured transfer curves](results/vtc_measured.png)
 
-`analyze.py` generates the tables below from the raw captures and `sim/ltspice_values.csv`. A test checks that they still match the data.
+It started as an EEC 111 lab at UC Davis in Spring 2026. The question was how transistor strength moves an inverter's switching point and noise margins. After the course I went back to the raw scope captures and wrote a Python script that gets the numbers straight from them.
+
+## What I did
+
+The first inverter is a plain one with one NMOS and one PMOS. In the second I put two PMOS in parallel to make the pull-up stronger. In the third I put two NMOS in parallel to make the pull-down stronger. All three ran on a breadboard from 5 V.
+
+I measured them with an ADALM2000 and Scopy. Its signal generator stepped the input from 0 to 5 V while its scope recorded the input and the output. I used 0.5 V steps far from the switching point and 50 mV steps near it, so most of the points land where the output changes fastest. I also simulated the same circuits in LTspice with the course's CD4007 model. The raw captures are in [data/](data/).
+
+That script is `analyze.py`. It finds the switching point, where the output equals the input, and the noise margins on each full sweep. Then it draws the plots. It has 34 tests, and most of them run on synthetic curves where the right answer is known. GitHub Actions runs the tests and the analysis on every push.
+
+## What I found
+
+Two PMOS in parallel moved the switching point up by about 180 mV. LTspice predicted just over 200 mV, so the model got the direction and roughly the size right. The stronger pull-up also cut the high noise margin by about 0.17 V.
+
+All three measured switching points sit below LTspice. On the plain inverter the gap is about 0.35 V. A DC sweep doesn't depend on breadboard capacitance, so I read this as a difference between the LTspice model and the real CD4007 parts.
+
+![Transition bands, measured and LTspice](results/measured_vs_ltspice.png)
+
+Each bar covers the inputs where the inverter's gain is above one, from VIL to VIH. The tick marks the switching point. Solid bars are measured and light ones are LTspice.
+
+## Problems I ran into
+
+The scope only resolves about 20 mV. Near the switching point the input moves 50 mV at a time, so a slope taken sample by sample is too noisy. The script splits the input into flat steps first and takes the median of each one. Each capture also starts and stops partway through the staircase, so it keeps only the sweeps that cover the full range.
+
+On the low side of each curve the input steps were still wide. The slope that sets VIL reaches across a step of 0.45 V or more. So VIL and the low noise margin are only as fine as that step, and the tables mark them with a star. The switching point and VIH come from the 50 mV steps.
+
+I can't read much into the two-NMOS result. Its switching point came out only 26 mV below the plain inverter's. LTspice predicted a drop of about 220 mV. But the PMOS and NMOS captures both read the 0 V input step 26 mV lower than the baseline capture did, so the shift is no bigger than the offset between captures. The PMOS shift is about seven times that offset, so it still stands.
+
+## Run it
+
+```
+pip install -r requirements.txt
+python analyze.py data/*.csv
+pytest
+```
+
+The script prints the numbers for each sweep and writes `results/summary.md` and both plots. With `--readme README.md` it also refreshes the tables below, and a test checks that they still match the data. More detail on the setup and the method is in [docs/details.md](docs/details.md).
+
+<details>
+<summary>Full results tables</summary>
 
 <!-- results:start (generated by analyze.py) -->
 All values are in volts. Each measured value is the median over the full sweeps in its capture.
@@ -57,62 +76,8 @@ Capture checks:
 | Lab3-Part2.5-strongerNMOS.csv | 4 | 30 | -0.020 | 0.3 |
 <!-- results:end -->
 
-What the numbers show:
-
-- Two PMOS in parallel raised VM by 178 mV. LTspice predicted 205 mV.
-- The stronger pull-up also cut NMH from 2.428 V to 2.258 V.
-- Two NMOS in parallel moved VM by -26 mV. LTspice predicted about -220 mV.
-- Both Part 2.5 captures read the 0 V step 26 mV below the baseline capture. That offset is small next to the 178 mV PMOS shift. It is as large as the NMOS shift, so the NMOS shift is within the offset.
-- Measured VM sits 355 mV (baseline) and 382 mV (two PMOS) below LTspice. A DC sweep does not depend on breadboard capacitance. So I read this gap as a difference between the LTspice device model and the real CD4007 parts.
-- Each VM falls between two 50 mV steps. Repeated sweeps agree within 7 mV.
-- Each measured VIL uses a slope that reaches back across a wide input step, so it carries a `*`. With two PMOS, that step runs from 1.5 V to 2.4 V. VM and VIH come from the 50 mV steps.
-
-![Transition bands, measured vs LTspice](results/measured_vs_ltspice.png)
-
-### Square-wave check
-
-The lab also drove three gates with a square wave. Each gate sat between a driver inverter and a load inverter, in LTspice and on the breadboard. These Vpp values come from my lab report.
-
-| Gate | LTspice Vpp (V) | Measured Vpp (V) | Difference |
-|---|---:|---:|---:|
-| Inverter | 5.18 | 5.30 | 2.29% |
-| NAND | 5.23 | 5.40 | 3.20% |
-| NOR | 5.27 | 5.50 | 4.27% |
-
-The difference is |measured - LTspice| divided by the mean of the two.
-
-## Method
-
-`analyze.py` works on steps, not raw samples. A sample-by-sample derivative is too noisy here, because the scope code (about 20 mV) is close to the 50 mV step.
-
-1. Split CH1 into flat steps. An edge is where the median of the next 10 ms differs from the median of the last 10 ms by more than 30 mV. Drop 5 ms at each end of a step, then keep the median input and output.
-2. Split the steps into sweeps from 0 V to 5 V. Keep only the full sweeps.
-3. VOH is the output at the lowest step. VOL is the output at the highest step.
-4. VM is where the output equals the input. The script interpolates between the two steps around it.
-5. The slope at each step is the line through its two neighbors. VIL and VIH are where this slope crosses -1 on each side of the steepest step.
-6. NML = VIL - VOL and NMH = VOH - VIH. The table shows the median over the full sweeps.
-
-The tests build synthetic tanh transfer curves with known answers. With the lab's 50 mV steps and 20 mV scope code, VM lands within 10 mV of the true value on those curves. VIL and VIH land within 40 mV.
-
-## How to run
-
-```
-pip install -r requirements.txt
-python analyze.py data/*.csv
-pytest
-```
-
-The script prints the numbers for each sweep, then the tables. It writes `results/summary.md` and the two plots. Add `--readme README.md` to refresh the tables in this file. GitHub Actions runs the tests and the analysis on every push.
-
-## Later additions (2026-09-29)
-
-I added these after the course. They work from the raw captures above.
-
-- `analyze.py` finds the transfer-curve points in the stepped sweeps.
-- Tests check it on synthetic transfer curves.
-- The plots in `results/` come from the same script.
-- A GitHub Actions workflow runs the tests and the analysis.
+</details>
 
 ## Credits
 
-The lab procedure and the driver/load test fixture come from the EEC 111 course at UC Davis. The CD4007 LTspice model and the device values used in the lab also came from the course. I built and measured the circuits. I also ran the LTspice simulations.
+The lab procedure and the driver and load test fixture come from the EEC 111 course at UC Davis. The CD4007 LTspice model and the device values used in the lab also came from the course. I built and measured the circuits and ran the LTspice simulations. I added the analysis script and its tests after the course.
