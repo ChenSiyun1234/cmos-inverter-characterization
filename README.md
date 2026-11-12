@@ -4,7 +4,7 @@ I built three CMOS inverters from CD4007 transistors and compared their measured
 
 ![Measured transfer curves](results/vtc_measured.png)
 
-It started as an EEC 111 lab at UC Davis in Spring 2026. The question was how transistor strength moves an inverter's switching point and noise margins. After the course I went back to the raw scope captures and wrote a Python script that gets the numbers straight from them.
+It started as a circuits lab in Spring 2026. The question was how transistor strength moves an inverter's switching point and noise margins. After the course I went back to the raw scope captures and wrote a Python script that gets the numbers straight from them.
 
 ## What I did
 
@@ -80,4 +80,4 @@ Capture checks:
 
 ## Credits
 
-The lab procedure and the driver and load test fixture come from the EEC 111 course at UC Davis. The CD4007 LTspice model and the device values used in the lab also came from the course. I built and measured the circuits and ran the LTspice simulations. I added the analysis script and its tests after the course.
+The lab procedure and the driver and load test fixture come from the course. The CD4007 LTspice model and the device values used in the lab also came from the course. I built and measured the circuits and ran the LTspice simulations. I added the analysis script and its tests after the course.
